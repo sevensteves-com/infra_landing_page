@@ -26,7 +26,7 @@ jobs:
       - name: Build and Push Image
         run: |
           docker buildx build --builder multiarch-builder \
-            --platform linux/arm64,linux/amd64 \
+            --platform linux/amd64 \
             -t regi.sevensteves.com/infra-landing-page:latest \
             ./web --push
 
