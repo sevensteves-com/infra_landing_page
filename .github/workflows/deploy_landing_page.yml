@@ -1,0 +1,90 @@
+name: Build and Deploy Landing Page
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+
+jobs:
+  build:
+    name: Build Docker Image (Multi-Arch)
+    environment: main
+    runs-on: [self-hosted, ansible, docker-build, sjl-ansops-01]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        run: |
+          if ! docker buildx inspect multiarch-builder >/dev/null 2>&1; then
+            docker buildx create --name multiarch-builder --driver docker-container --use
+          else
+            docker buildx use multiarch-builder
+          fi
+          docker buildx inspect --bootstrap
+
+      - name: Build and Push Image
+        run: |
+          docker buildx build --builder multiarch-builder \
+            --platform linux/arm64,linux/amd64 \
+            -t regi.sevensteves.com/infra-landing-page:latest \
+            ./web --push
+
+  deploy:
+    name: Deploy Landing Page
+    environment: main
+    needs: build
+    runs-on: [self-hosted, ansible]
+    env:
+      VAULT_USERNAME: ${{ secrets.META_API_AUTH_TOKEN  }}
+      DISCORD_ENDPOINT: https://api.sevensteves.com/discord/alert
+      LANDING_URL: https://landing.sevensteves.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy with Ansible
+        run: |
+          ansible-playbook playbooks/deploy_landing_page.yml -e "target_host=sjl-dwork-01.home"
+
+      - name: Notify Discord of successful deployment
+        if: success()
+        run: |
+          curl -X POST "$DISCORD_ENDPOINT" \
+            -H "Authorization: Bearer $META_API_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "message": "Deployment to prod completed successfully.",
+              "header": "✅ Landing Page Deployment",
+              "footer": "GitHub Actions · CI/CD",
+              "severity": "info",
+              "meta": {
+                "Branch": "${{ github.ref_name }}",
+                "Commit SHA": "${{ github.sha }}",
+                "Deployed By": "${{ github.actor }}",
+                "Runner": "${{ runner.name }}",
+                "Job URL": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "Landing Page": "${{ env.LANDING_URL }}"
+              }
+            }'
+
+      - name: Notify Discord if deploy failed
+        if: failure()
+        run: |
+          curl -X POST "$DISCORD_ENDPOINT" \
+            -H "Authorization: Bearer $META_API_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "message": "❌ Deployment to prod failed.",
+              "header": "🚨 Landing Page Deployment Failed",
+              "footer": "GitHub Actions · CI/CD",
+              "severity": "error",
+              "meta": {
+                "Branch": "${{ github.ref_name }}",
+                "Commit SHA": "${{ github.sha }}",
+                "Deployed By": "${{ github.actor }}",
+                "Runner": "${{ runner.name }}",
+                "Job URL": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "Landing Page": "${{ env.LANDING_URL }}"
+              }
+            }'

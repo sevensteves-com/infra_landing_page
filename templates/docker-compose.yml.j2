@@ -1,0 +1,18 @@
+services:
+  {{ container_name }}:
+    image: {{ container_image }}
+    container_name: {{ container_name }}
+    stop_grace_period: 5s
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ container_name }}.rule=Host(`{{ landing_domain }}`)"
+      - "traefik.http.routers.{{ container_name }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ container_name }}.tls.certresolver=cloudflare"
+      - "traefik.http.services.{{ container_name }}.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
