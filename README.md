@@ -35,3 +35,11 @@ docker run -p 8080:3000 infra_landing_page
 * Docker image is built and pushed via GitHub Actions
 * Deployed with Ansible to `sjl-dwork-01.home`
 * Configured for HTTPS access through Traefik
+
+## Using This Template
+
+1. Click **"Use this template"** on GitHub.
+2. Clone your new repo locally.
+3. Run `npm install --prefix web`
+4. Start dev server with `npm run dev --prefix web`
+5. Build and deploy using the included GitHub Actions workflow.
