@@ -27,7 +27,7 @@ jobs:
         run: |
           docker buildx build --builder multiarch-builder \
             --platform linux/amd64 \
-            -t regi.sevensteves.com/infra-landing-page:latest \
+            -t regi.sevensteves.com/template-landing-page:latest \
             ./web --push
 
   deploy:
@@ -38,7 +38,7 @@ jobs:
     env:
       VAULT_USERNAME: ${{ secrets.META_API_AUTH_TOKEN  }}
       DISCORD_ENDPOINT: https://api.sevensteves.com/discord/alert
-      LANDING_URL: https://landing.sevensteves.com
+      LANDING_URL: https://template.sevensteves.com
     steps:
       - name: Checkout
         uses: actions/checkout@v4

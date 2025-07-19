@@ -1,6 +1,6 @@
 ---
-container_name: infra_landing_page
-container_image: regi.sevensteves.com/infra-landing-page:latest
-deploy_dir: /opt/infra_landing_page
-landing_domain: landing.sevensteves.com
+container_name: template_landing_page
+container_image: regi.sevensteves.com/template-landing-page:latest
+deploy_dir: /opt/template_landing_page
+landing_domain: template.sevensteves.com
 target_host: sjl-dwork-01.home
