@@ -1,3 +1,5 @@
+[![Template](https://img.shields.io/badge/template-repository-blue)](https://github.com/sevensteves-com/infra_landing_page/generate)
+
 [![Build and Deploy Landing Page](https://github.com/sevensteves-com/infra_landing_page/actions/workflows/deploy_landing_page.yml/badge.svg)](https://github.com/sevensteves-com/infra_landing_page/actions/workflows/deploy_landing_page.yml)
 
 # infra_landing_page
